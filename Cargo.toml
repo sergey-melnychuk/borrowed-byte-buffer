@@ -1,0 +1,12 @@
+[package]
+name = "borrowed-byte-buffer"
+version = "0.0.1"
+authors = ["sergey-melnychuk"]
+edition = "2018"
+description = "Byte buffer over borrowed &[u8] in Rust"
+license = "MIT"
+documentation = "https://github.com/sergey-melnychuk/borrowed-byte-buffer"
+homepage = "https://github.com/sergey-melnychuk/borrowed-byte-buffer"
+repository = "https://github.com/sergey-melnychuk/borrowed-byte-buffer"
+
+[dependencies]
