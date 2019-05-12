@@ -40,6 +40,19 @@ impl<'a> ByteBufMut<'a> {
         ByteBufMut { pos: 0, buf }
     }
 
+    pub fn put_bytes(&mut self, bytes: &[u8]) -> usize {
+        let pos = self.pos;
+        for (i, &x) in bytes.iter().enumerate() {
+            self.pos = pos + i;
+            if self.pos >= self.buf.len() {
+                return i;
+            }
+            self.buf[self.pos] = x;
+        }
+        self.pos += 1;
+        bytes.len()
+    }
+
     pub fn put_u8(&mut self, x: u8) -> usize {
         self.put_bytes(&[x])
     }
@@ -56,18 +69,7 @@ impl<'a> ByteBufMut<'a> {
         self.put_bytes(&get_bytes_u64(x))
     }
 
-    fn put_bytes(&mut self, bytes: &[u8]) -> usize {
-        let pos = self.pos;
-        for (i, &x) in bytes.iter().enumerate() {
-            self.pos = pos + i;
-            if self.pos >= self.buf.len() {
-                return i;
-            }
-            self.buf[self.pos] = x;
-        }
-        self.pos += 1;
-        bytes.len()
-    }
+    pub fn pos(&self) -> usize { self.pos }
 }
 
 pub struct ByteBuf<'a> {
@@ -81,7 +83,7 @@ impl<'a> ByteBuf<'a> {
         ByteBuf { pos: 0, buf }
     }
 
-    fn get_bytes(&mut self, n: usize) -> &[u8] {
+    pub fn get_bytes(&mut self, n: usize) -> &[u8] {
         let at = self.pos;
         let to = cmp::min(self.buf.len(), self.pos + n);
         &self.buf[at..to]
@@ -145,6 +147,7 @@ impl<'a> ByteBuf<'a> {
         }
     }
 
+    pub fn pos(&self) -> usize { self.pos }
 }
 
 #[cfg(test)]
