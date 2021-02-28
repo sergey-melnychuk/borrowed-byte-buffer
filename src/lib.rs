@@ -86,6 +86,7 @@ impl<'a> ByteBuf<'a> {
     pub fn get_bytes(&mut self, n: usize) -> &[u8] {
         let at = self.pos;
         let to = cmp::min(self.buf.len(), self.pos + n);
+        self.pos += n;
         &self.buf[at..to]
     }
 
@@ -94,7 +95,6 @@ impl<'a> ByteBuf<'a> {
         let bytes = self.get_bytes(n);
         if bytes.len() == n {
             let x = bytes[0];
-            self.pos += n;
             Some(x)
         } else {
             None
@@ -106,7 +106,6 @@ impl<'a> ByteBuf<'a> {
         let bytes = self.get_bytes(n);
         if bytes.len() == n {
             let x = ((bytes[0] as u16) << 8) + bytes[1] as u16;
-            self.pos += n;
             Some(x)
         } else {
             None
@@ -121,7 +120,6 @@ impl<'a> ByteBuf<'a> {
                 ((bytes[1] as u32) << 16) +
                 ((bytes[2] as u32) << 8) +
                 bytes[3] as u32;
-            self.pos += n;
             Some(x)
         } else {
             None
@@ -140,7 +138,6 @@ impl<'a> ByteBuf<'a> {
                 ((bytes[5] as u64) << 16) +
                 ((bytes[6] as u64) << 8) +
                 bytes[7] as u64;
-            self.pos += n;
             Some(x)
         } else {
             None
@@ -289,5 +286,29 @@ mod tests {
         assert_eq!(bb.pos, 7);
         assert_eq!(4 as u64, bb.get_u64().unwrap());
         assert_eq!(bb.pos, 15);
+    }
+
+    #[test]
+    fn test_write_slice() {
+        let mut buf = [0 as u8; 64];
+        let mut bb = ByteBufMut::wrap(&mut buf);
+
+        let a = b"hello there";
+        let b = b"sup?";
+        bb.put_bytes(a);
+        bb.put_bytes(b);
+        let p = bb.pos;
+
+        assert_eq!(b"hello theresup?\0", &buf[0..(a.len() + b.len() + 1)]);
+        assert_eq!(p, a.len() + b.len());
+    }
+
+    #[test]
+    fn test_read_slice() {
+        let mut buf: &[u8] = b"what is up?!...\0";
+        let mut bb = ByteBuf::wrap(&mut buf);
+
+        assert_eq!(b"what ", bb.get_bytes(5));
+        assert_eq!(bb.pos, 5);
     }
 }
